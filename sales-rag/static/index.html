@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LumenRAG Enterprise | Lighting Technical Sales Datasheet Assistant</title>
+  <meta name="description" content="AI-powered technical sales assistant grounded in approved architectural and commercial lighting product datasheets.">
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="/static/style.css?v=2.1">
+  
+  <!-- Marked.js for markdown rendering in chat -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+<body class="theme-dark">
+  <div class="app-layout">
+    
+    <!-- Top Global Navigation Header -->
+    <header class="app-header">
+      <div class="header-brand">
+        <button id="sidebar-toggle-btn" class="icon-btn" title="Toggle Product Catalog" aria-label="Toggle Product Catalog">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+        <div class="brand-logo-wrap">
+          <div class="brand-glyph">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2v2"></path>
+              <path d="M12 20v2"></path>
+              <path d="m4.93 4.93 1.41 1.41"></path>
+              <path d="m17.66 17.66 1.41 1.41"></path>
+              <path d="M2 12h2"></path>
+              <path d="M20 12h2"></path>
+              <path d="m6.34 17.66-1.41 1.41"></path>
+              <path d="m19.07 4.93-1.41 1.41"></path>
+              <circle cx="12" cy="12" r="5"></circle>
+            </svg>
+          </div>
+          <div class="brand-text">
+            <div class="brand-title">
+              <span>Lumen</span><strong>RAG</strong>
+              <span class="version-tag">ENTERPRISE</span>
+            </div>
+            <div class="brand-subtitle">Architectural & Commercial Lighting Intelligence</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="header-status-group">
+        <div class="status-indicator-pill" id="system-status-pill" title="Hybrid Vector & Lexical RAG Active">
+          <span class="pulsing-radar-dot"></span>
+          <span class="status-text">FAISS + BM25 Hybrid Active</span>
+          <span class="status-divider">•</span>
+          <span class="status-docs-count">13 Approved Datasheets</span>
+        </div>
+
+        <div class="header-actions">
+          <button id="compare-btn" class="secondary-btn" title="Compare two products side by side">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="3" width="8" height="18" rx="2"></rect>
+              <rect x="14" y="3" width="8" height="18" rx="2"></rect>
+            </svg>
+            <span>Compare Specs</span>
+          </button>
+          
+          <button id="clear-chat-btn" class="icon-btn" title="Reset Session & Clear Messages" aria-label="Clear chat">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="3 6 5 6 21 6"></polyline>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Workspace -->
+    <div class="workspace-body">
+      
+      <!-- Collapsible Sidebar (Product Catalog & Spec Drawer) -->
+      <aside class="catalog-sidebar" id="catalog-sidebar">
+        <div class="sidebar-header">
+          <div class="sidebar-heading">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"></path>
+              <path d="M6 6h10"></path>
+              <path d="M6 10h10"></path>
+            </svg>
+            <span>Approved Catalog</span>
+          </div>
+          <span class="badge-subtle" id="catalog-count-badge">13 Products</span>
+        </div>
+
+        <div class="sidebar-search-box">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input type="text" id="catalog-search-input" placeholder="Search product or spec..." autocomplete="off">
+        </div>
+
+        <div class="category-tabs" id="category-filter-tabs">
+          <button class="cat-tab active" data-cat="all">All</button>
+          <button class="cat-tab" data-cat="downlight">Downlight</button>
+          <button class="cat-tab" data-cat="spotlight">Spotlight</button>
+          <button class="cat-tab" data-cat="linear">Linear</button>
+        </div>
+
+        <div class="catalog-list" id="catalog-list">
+          <div class="loading-catalog-skeleton">Loading approved datasheets...</div>
+        </div>
+
+        <div class="sidebar-footer">
+          <div class="engine-badge">
+            <span class="engine-indicator"></span>
+            <span>Groq LLaMA/Qwen • Strict Zero-Hallucination</span>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Central QA Arena -->
+      <main class="chat-viewport">
+        
+        <!-- Category Filter & Sample Prompts Bar -->
+        <div class="quick-prompts-bar">
+          <div class="quick-prompts-title">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+            </svg>
+            <span>Technical Queries:</span>
+          </div>
+          <div class="chips-scroll-container">
+            <button class="quick-chip" onclick="askChip('What is the beam angle of BrightSpace downlight?')">
+              <span class="chip-dot"></span> BrightSpace Beam Angles
+            </button>
+            <button class="quick-chip" onclick="askChip('Is LaserLux dimmable with DALI or TRIAC protocols?')">
+              <span class="chip-dot"></span> LaserLux DALI/TRIAC Dimming
+            </button>
+            <button class="quick-chip" onclick="askChip('What is the warranty and lifespan on Eco-Downlight?')">
+              <span class="chip-dot"></span> Eco-Downlight Warranty & L70
+            </button>
+            <button class="quick-chip" onclick="askChip('What are the cutout and ceiling dimensions for BrightSpace 10W?')">
+              <span class="chip-dot"></span> BrightSpace 10W Cutout (mm)
+            </button>
+            <button class="quick-chip" onclick="askChip('What is the CRI and IP rating of Value Downlight Pro?')">
+              <span class="chip-dot"></span> Value Downlight Pro IP & CRI
+            </button>
+            <button class="quick-chip" onclick="askChip('What is the input voltage range of Eco Spotlight?')">
+              <span class="chip-dot"></span> Eco Spotlight Input Voltage
+            </button>
+            <button class="quick-chip" onclick="askChip('Which downlight fixtures offer CRI >90 for retail or art gallery?')">
+              <span class="chip-dot"></span> High CRI (>90) Catalog Search
+            </button>
+          </div>
+        </div>
+
+        <!-- Chat History Stream -->
+        <div class="chat-container" id="chat-box">
+          
+          <!-- Welcome Hero Banner -->
+          <div class="welcome-hero-card" id="welcome-card">
+            <div class="hero-top">
+              <div class="hero-icon-bubble">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 2v2"></path>
+                  <path d="M12 20v2"></path>
+                  <path d="m4.93 4.93 1.41 1.41"></path>
+                  <path d="m17.66 17.66 1.41 1.41"></path>
+                  <path d="M2 12h2"></path>
+                  <path d="M20 12h2"></path>
+                  <path d="m6.34 17.66-1.41 1.41"></path>
+                  <path d="m19.07 4.93-1.41 1.41"></path>
+                  <circle cx="12" cy="12" r="5"></circle>
+                </svg>
+              </div>
+              <div class="hero-content">
+                <h2>Commercial Lighting Technical Sales Assistant</h2>
+                <p>Welcome. Ask precise technical questions regarding electrical specifications, optical beam distributions, CCT color temperatures, IP ingress protection, cutouts, or control protocols. Every response is strictly synthesized from approved technical datasheets.</p>
+              </div>
+            </div>
+
+            <div class="hero-capabilities-grid">
+              <div class="cap-card" onclick="askChip('Compare BrightSpace and Eco-Downlight in terms of beam angles, CRI, and warranty')">
+                <div class="cap-icon">📐</div>
+                <div class="cap-text">
+                  <strong>Multi-Product Comparisons</strong>
+                  <span>Compare beam angles, CRI, warranties & dimensions</span>
+                </div>
+              </div>
+              <div class="cap-card" onclick="askChip('What dimming options are supported on LaserLux and BrightSpace?')">
+                <div class="cap-icon">⚡</div>
+                <div class="cap-text">
+                  <strong>Controls & Dimming</strong>
+                  <span>Verify DALI, 0-10V, TRIAC & phase dimming compatibility</span>
+                </div>
+              </div>
+              <div class="cap-card" onclick="askChip('What are the cutout dimensions for 5W, 10W and 20W BrightSpace?')">
+                <div class="cap-icon">📏</div>
+                <div class="cap-text">
+                  <strong>Cutouts & Mechanical</strong>
+                  <span>Accurate ceiling cutout diameters in millimeters (C mm)</span>
+                </div>
+              </div>
+              <div class="cap-card" onclick="askChip('What is the IP rating, lifespan, and warranty for NanoLux?')">
+                <div class="cap-icon">🛡️</div>
+                <div class="cap-text">
+                  <strong>Compliance & Lifespan</strong>
+                  <span>Verify IP/IK ratings, L70 operating hours & warranties</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Input Console -->
+        <footer class="query-console">
+          <div class="console-box-wrapper">
+            <div class="console-prefix-badge">
+              <span class="pulse-dot-small"></span>
+              <span>PROMPT</span>
+            </div>
+            
+            <textarea 
+              id="user-input" 
+              rows="1" 
+              placeholder="Ask a technical sales or specification question (e.g. What is the beam angle of BrightSpace?)..." 
+              autocomplete="off"
+            ></textarea>
+            
+            <div class="console-controls">
+              <span class="keyboard-hint"><kbd>↵</kbd> send</span>
+              <button id="send-btn" class="send-action-btn" onclick="sendQuery()" aria-label="Send technical inquiry">
+                <span class="btn-text">Submit</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="22" y1="2" x2="11" y2="13"></line>
+                  <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                </svg>
+              </button>
+            </div>
+          </div>
+          <div class="console-disclaimer">
+            <span>Verified Grounded Retrieval: Responses cite exact document names & pages. Always cross-reference with official engineering submittals.</span>
+          </div>
+        </footer>
+
+      </main>
+
+    </div>
+  </div>
+
+  <!-- PDF Datasheet Viewer Modal -->
+  <div class="modal-backdrop" id="pdf-modal" style="display: none;">
+    <div class="modal-dialog pdf-dialog">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="16" y1="13" x2="8" y2="13"></line>
+            <line x1="16" y1="17" x2="8" y2="17"></line>
+            <polyline points="10 9 9 9 8 9"></polyline>
+          </svg>
+          <span id="pdf-modal-title">Datasheet Submittal Document</span>
+        </div>
+        <div class="modal-actions">
+          <a id="pdf-download-link" href="#" target="_blank" class="secondary-btn btn-sm">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            <span>Open in Tab</span>
+          </a>
+          <button class="icon-btn" onclick="closePdfModal()" aria-label="Close PDF Viewer">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+      </div>
+      <div class="modal-body pdf-body">
+        <iframe id="pdf-frame" src="about:blank" title="Technical Datasheet Preview"></iframe>
+      </div>
+    </div>
+  </div>
+
+  <!-- Product Comparator Modal -->
+  <div class="modal-backdrop" id="compare-modal" style="display: none;">
+    <div class="modal-dialog compare-dialog">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="3" width="8" height="18" rx="2"></rect>
+            <rect x="14" y="3" width="8" height="18" rx="2"></rect>
+          </svg>
+          <span>Side-by-Side Product Datasheet Comparator</span>
+        </div>
+        <button class="icon-btn" onclick="closeCompareModal()" aria-label="Close Comparator">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body compare-body">
+        <div class="compare-selectors">
+          <div class="selector-col">
+            <label for="compare-prod-1">Fixture 1:</label>
+            <select id="compare-prod-1" onchange="updateComparison()"></select>
+          </div>
+          <div class="vs-badge">VS</div>
+          <div class="selector-col">
+            <label for="compare-prod-2">Fixture 2:</label>
+            <select id="compare-prod-2" onchange="updateComparison()"></select>
+          </div>
+        </div>
+        <div class="compare-table-wrap" id="compare-table-container">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <script src="/static/script.js?v=2.1"></script>
+</body>
+</html>

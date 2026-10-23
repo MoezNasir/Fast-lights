@@ -1,0 +1,11 @@
+pymupdf
+pdfplumber
+sentence-transformers
+faiss-cpu
+rank-bm25
+fastapi
+uvicorn
+streamlit
+pydantic
+numpy
+scikit-learn
